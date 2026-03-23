@@ -3,7 +3,7 @@ name: filo-email
 version: 1.1.0
 description: Set up and manage email via IMAP/SMTP. Supports Gmail, Outlook, Yahoo, iCloud, FastMail, ProtonMail, Zoho, QQ Mail, 163 Mail, 126 Mail, Sina Mail, 139 Mail, Aliyun Mail, Tencent Exmail, GMX, Web.de, T-Online, Orange, Free.fr, Libero, Mail.ru, Posteo, Mailbox.org, AOL, Comcast, AT&T, and more. Guides through auth setup and verifies connection. Use when the user wants to connect an email account, read emails, send emails, or troubleshoot IMAP access.
 homepage: https://github.com/FiloAI
-metadata: {"clawdbot":{"emoji":"📮"}}
+metadata: {"emoji":"📮"}
 ---
 
 Connect email accounts to the terminal. Works with every major email provider worldwide.
