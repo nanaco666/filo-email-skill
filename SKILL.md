@@ -30,15 +30,11 @@ Single source of truth for all supported providers.
 | CN6 | Aliyun Mail | aliyun.com | imap.aliyun.com:993 TLS | smtp.aliyun.com:465 TLS | Regular password |
 | CN7 | Tencent Exmail | exmail.qq.com | imap.exmail.qq.com:993 TLS | smtp.exmail.qq.com:465 TLS | Client password (if Secure Login on) |
 
-### Global / USA
+### USA & Global
 
 | ID | Provider | Domains | IMAP | SMTP | Auth |
 |----|----------|---------|------|------|------|
-| US1 | Gmail | gmail.com, googlemail.com | imap.gmail.com:993 TLS | smtp.gmail.com:465 TLS | App Password |
-| US2 | Outlook / Hotmail / Live | outlook.com, hotmail.com, live.com | outlook.office365.com:993 TLS | smtp.office365.com:587 STARTTLS | Regular or App Password |
-| US3 | Microsoft 365 (work) | custom domain via Microsoft | outlook.office365.com:993 TLS | smtp.office365.com:587 STARTTLS | Regular or App Password |
 | US4 | Yahoo Mail | yahoo.com, ymail.com | imap.mail.yahoo.com:993 TLS | smtp.mail.yahoo.com:465 TLS | App Password |
-| US5 | iCloud Mail | icloud.com, me.com, mac.com | imap.mail.me.com:993 TLS | smtp.mail.me.com:587 STARTTLS | App-Specific Password |
 | US6 | AOL Mail | aol.com | imap.aol.com:993 TLS | smtp.aol.com:465 TLS | App Password (always required) |
 | US7 | AT&T Mail | att.net | imap.mail.att.net:993 TLS | smtp.mail.att.net:465 TLS | Secure Mail Key |
 | US8 | Comcast / Xfinity | comcast.net | imap.comcast.net:993 TLS | smtp.comcast.net:587 STARTTLS | Regular password (3rd-party access must be enabled) |
@@ -99,10 +95,7 @@ Domain auto-detection:
 - `@139.com` → CN5
 - `@aliyun.com` → CN6
 - `@exmail.qq.com` or custom domain via Tencent Exmail → CN7
-- `@gmail.com` / `@googlemail.com` → US1
-- `@outlook.com` / `@hotmail.com` / `@live.com` → US2
 - `@yahoo.com` / `@ymail.com` → US4
-- `@icloud.com` / `@me.com` / `@mac.com` → US5
 - `@aol.com` → US6
 - `@att.net` → US7
 - `@comcast.net` → US8
@@ -208,32 +201,6 @@ https://exmail.qq.com → 设置 → 绑定邮箱 → 开启安全登录 → 新
 
 ---
 
-### US1 — Gmail
-
-Gmail requires an **App Password** (regular Google password rejected for IMAP).
-
-1. Open: https://myaccount.google.com/apppasswords
-2. Under "Select app" choose **Mail**, "Select device" choose **Other** → name it `filo-mail`
-3. Click **Generate** → copy the 16-character password (shown once)
-
-> If App Passwords is missing: enable 2-Step Verification first at https://myaccount.google.com/security
-
-Also confirm IMAP is enabled in Gmail: Settings → See all settings → Forwarding and POP/IMAP → Enable IMAP → Save Changes
-
----
-
-### US2 / US3 — Outlook / Hotmail / Live / Microsoft 365
-
-**Personal accounts (outlook.com, hotmail.com, live.com):**
-- Without 2FA: use regular password
-- With 2FA: generate App Password at https://account.microsoft.com/security → Advanced security options → App passwords
-
-**Work/school accounts (Microsoft 365):**
-- Check with IT admin that IMAP is enabled for the account
-- Auth: work password or App Password if MFA enforced
-
----
-
 ### US4 — Yahoo Mail
 
 Yahoo requires an **App Password**.
@@ -241,16 +208,6 @@ Yahoo requires an **App Password**.
 1. Open: https://login.yahoo.com/myaccount/security/
 2. Click **Generate app password** → Select Other → name it `filo-mail`
 3. Copy the generated password
-
----
-
-### US5 — iCloud Mail
-
-iCloud requires an **App-Specific Password**.
-
-1. Open: https://appleid.apple.com/account/manage
-2. Sign in → Security → App-Specific Passwords → click **+**
-3. Name it `filo-mail` → Create → copy the password (format: `xxxx-xxxx-xxxx-xxxx`)
 
 ---
 
@@ -626,54 +583,6 @@ message.send.backend.auth.type = "password"
 message.send.backend.auth.cmd = "echo 'CLIENT_PASSWORD_HERE'"
 ```
 
-### US1 — Gmail
-```toml
-[accounts.gmail]
-email = "USER@gmail.com"
-display-name = "Your Name"
-default = true
-
-backend.type = "imap"
-backend.host = "imap.gmail.com"
-backend.port = 993
-backend.encryption.type = "tls"
-backend.login = "USER@gmail.com"
-backend.auth.type = "password"
-backend.auth.cmd = "echo 'APP_PASSWORD_HERE'"
-
-message.send.backend.type = "smtp"
-message.send.backend.host = "smtp.gmail.com"
-message.send.backend.port = 465
-message.send.backend.encryption.type = "tls"
-message.send.backend.login = "USER@gmail.com"
-message.send.backend.auth.type = "password"
-message.send.backend.auth.cmd = "echo 'APP_PASSWORD_HERE'"
-```
-
-### US2 — Outlook / Hotmail / Live
-```toml
-[accounts.outlook]
-email = "USER@outlook.com"
-display-name = "Your Name"
-default = true
-
-backend.type = "imap"
-backend.host = "outlook.office365.com"
-backend.port = 993
-backend.encryption.type = "tls"
-backend.login = "USER@outlook.com"
-backend.auth.type = "password"
-backend.auth.cmd = "echo 'PASSWORD_HERE'"
-
-message.send.backend.type = "smtp"
-message.send.backend.host = "smtp.office365.com"
-message.send.backend.port = 587
-message.send.backend.encryption.type = "start-tls"
-message.send.backend.login = "USER@outlook.com"
-message.send.backend.auth.type = "password"
-message.send.backend.auth.cmd = "echo 'PASSWORD_HERE'"
-```
-
 ### US4 — Yahoo Mail
 ```toml
 [accounts.yahoo]
@@ -696,30 +605,6 @@ message.send.backend.encryption.type = "tls"
 message.send.backend.login = "USER@yahoo.com"
 message.send.backend.auth.type = "password"
 message.send.backend.auth.cmd = "echo 'APP_PASSWORD_HERE'"
-```
-
-### US5 — iCloud Mail
-```toml
-[accounts.icloud]
-email = "USER@icloud.com"
-display-name = "Your Name"
-default = true
-
-backend.type = "imap"
-backend.host = "imap.mail.me.com"
-backend.port = 993
-backend.encryption.type = "tls"
-backend.login = "USER@icloud.com"
-backend.auth.type = "password"
-backend.auth.cmd = "echo 'APP_SPECIFIC_PASSWORD_HERE'"
-
-message.send.backend.type = "smtp"
-message.send.backend.host = "smtp.mail.me.com"
-message.send.backend.port = 587
-message.send.backend.encryption.type = "start-tls"
-message.send.backend.login = "USER@icloud.com"
-message.send.backend.auth.type = "password"
-message.send.backend.auth.cmd = "echo 'APP_SPECIFIC_PASSWORD_HERE'"
 ```
 
 ### US6 — AOL Mail

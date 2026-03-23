@@ -20,11 +20,7 @@ Guides you through auth setup for every major provider, writes the config, and v
 ### USA & Global
 | Provider | Domain |
 |----------|--------|
-| Gmail | gmail.com |
-| Outlook / Hotmail / Live | outlook.com, hotmail.com |
-| Microsoft 365 | work/school accounts |
 | Yahoo Mail | yahoo.com |
-| iCloud Mail | icloud.com, me.com |
 | AOL Mail | aol.com |
 | AT&T Mail | att.net |
 | Comcast / Xfinity | comcast.net |
