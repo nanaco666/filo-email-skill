@@ -1,0 +1,57 @@
+#!/bin/bash
+# filo-mail — email CLI wrapper
+# Powered by himalaya (https://github.com/pimalaya/himalaya, MIT)
+set -euo pipefail
+
+HIMALAYA_BIN=""
+
+find_himalaya() {
+  if command -v himalaya &>/dev/null; then
+    HIMALAYA_BIN="himalaya"
+    return 0
+  fi
+  return 1
+}
+
+install_himalaya() {
+  echo "[filo-mail] Installing email backend..."
+  if command -v brew &>/dev/null; then
+    brew install himalaya -q
+  else
+    OS=$(uname -s)
+    ARCH=$(uname -m)
+    BASE="https://github.com/pimalaya/himalaya/releases/latest/download"
+    if [ "$OS" = "Darwin" ] && [ "$ARCH" = "arm64" ]; then
+      FILE="himalaya-aarch64-apple-darwin.tar.gz"
+    elif [ "$OS" = "Darwin" ]; then
+      FILE="himalaya-x86_64-apple-darwin.tar.gz"
+    elif [ "$OS" = "Linux" ] && [ "$ARCH" = "aarch64" ]; then
+      FILE="himalaya-aarch64-unknown-linux-musl.tar.gz"
+    else
+      FILE="himalaya-x86_64-unknown-linux-musl.tar.gz"
+    fi
+    TMP=$(mktemp -d)
+    curl -sL "$BASE/$FILE" | tar -xz -C "$TMP"
+    mkdir -p "$HOME/.local/bin"
+    mv "$TMP/himalaya" "$HOME/.local/bin/himalaya"
+    export PATH="$HOME/.local/bin:$PATH"
+    echo "[filo-mail] Installed to ~/.local/bin/himalaya"
+  fi
+  HIMALAYA_BIN="himalaya"
+}
+
+ensure_himalaya() {
+  if ! find_himalaya; then
+    install_himalaya
+  fi
+}
+
+# filo-mail setup — interactive account setup
+if [ "${1:-}" = "setup" ]; then
+  shift
+  ensure_himalaya
+  exec "$HIMALAYA_BIN" account configure "$@"
+fi
+
+ensure_himalaya
+exec "$HIMALAYA_BIN" "$@"

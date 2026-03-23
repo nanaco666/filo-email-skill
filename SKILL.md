@@ -1,12 +1,12 @@
 ---
 name: filo-email
-version: 1.0.0
-description: Set up and manage email via IMAP/SMTP using Himalaya CLI. Supports Gmail, Outlook, Yahoo, iCloud, FastMail, ProtonMail, Zoho, and any custom IMAP server. Guides through App Password setup, multi-account config, and verifies connection. Use when you want to read, send, search, or organize email from the terminal.
+version: 1.1.0
+description: Set up and manage email via IMAP/SMTP. Supports Gmail, Outlook, Yahoo, iCloud, FastMail, ProtonMail, Zoho, QQ Mail, 163 Mail, 126 Mail, Sina Mail, 139 Mail, Aliyun Mail, Tencent Exmail, GMX, Web.de, T-Online, Orange, Free.fr, Libero, Mail.ru, Posteo, Mailbox.org, AOL, Comcast, AT&T, and more. Guides through auth setup and verifies connection. Use when the user wants to connect an email account, read emails, send emails, or troubleshoot IMAP access.
 homepage: https://github.com/FiloAI
-metadata: {"clawdbot":{"emoji":"📮","requires":{"bins":["himalaya"]},"install":[{"id":"himalaya","kind":"brew","formula":"himalaya","bins":["himalaya"],"label":"Install Himalaya (brew)"}]}}
+metadata: {"clawdbot":{"emoji":"📮"}}
 ---
 
-Connect your email accounts to the terminal. Himalaya supports IMAP/SMTP and works with every major email provider.
+Connect email accounts to the terminal. Works with every major email provider worldwide.
 
 When invoked, walk the user through every step in order. Do not skip steps.
 
@@ -14,216 +14,621 @@ When invoked, walk the user through every step in order. Do not skip steps.
 
 ## Provider Registry
 
-This is the single source of truth for all supported providers. To add a new provider in the future: add one row here and a matching config block + auth section in Steps 3–4.
+Single source of truth for all supported providers.
 
-| # | Provider | IMAP Host | IMAP Port | SMTP Host | SMTP Port | SMTP Enc | Auth Required |
-|---|----------|-----------|-----------|-----------|-----------|----------|---------------|
-| 1 | Gmail | imap.gmail.com | 993/TLS | smtp.gmail.com | 465/TLS | TLS | App Password |
-| 2 | Outlook / Hotmail / Live | outlook.office365.com | 993/TLS | smtp.office365.com | 587/STARTTLS | STARTTLS | Regular or App Password |
-| 3 | Microsoft 365 (work) | outlook.office365.com | 993/TLS | smtp.office365.com | 587/STARTTLS | STARTTLS | Regular or App Password |
-| 4 | Yahoo Mail | imap.mail.yahoo.com | 993/TLS | smtp.mail.yahoo.com | 465/TLS | TLS | App Password |
-| 5 | iCloud Mail | imap.mail.me.com | 993/TLS | smtp.mail.me.com | 587/STARTTLS | STARTTLS | App-Specific Password |
-| 6 | FastMail | imap.fastmail.com | 993/TLS | smtp.fastmail.com | 465/TLS | TLS | Regular or App Password |
-| 7 | ProtonMail (via Bridge) | 127.0.0.1 | 1143/none | 127.0.0.1 | 1025/none | none | Bridge Password |
-| 8 | Zoho Mail | imap.zoho.com | 993/TLS | smtp.zoho.com | 465/TLS | TLS | App Password |
-| 9 | GMX | imap.gmx.com | 993/TLS | mail.gmx.com | 587/STARTTLS | STARTTLS | Regular password |
-| 10 | Web.de | imap.web.de | 993/TLS | smtp.web.de | 587/STARTTLS | STARTTLS | Regular password |
-| 11 | Yandex Mail | imap.yandex.com | 993/TLS | smtp.yandex.com | 465/TLS | TLS | App Password |
-| 12 | Namecheap / cPanel | mail.YOURDOMAIN.com | 993/TLS | mail.YOURDOMAIN.com | 465/TLS | TLS | Regular password |
-| 13 | Custom IMAP | (user-supplied) | 993 | (user-supplied) | 465 | TLS | Regular password |
+**To add a new provider**: add one row to this table, one auth section in Step 3, and one config block in Step 4. No other changes needed.
 
-> **Adding a new provider**: Insert a row above, add an auth subsection in Step 3, and add a config block in Step 4. No code changes needed.
+### China
+
+| ID | Provider | Domains | IMAP | SMTP | Auth |
+|----|----------|---------|------|------|------|
+| CN1 | QQ Mail | qq.com | imap.qq.com:993 TLS | smtp.qq.com:465 TLS | Authorization code |
+| CN2 | 163 Mail | 163.com | imap.163.com:993 TLS | smtp.163.com:465 TLS | Authorization code |
+| CN3 | 126 Mail | 126.com | imap.126.com:993 TLS | smtp.126.com:465 TLS | Authorization code |
+| CN4 | Sina Mail | sina.com | imap.sina.com:993 TLS | smtp.sina.com:465 TLS | Authorization code |
+| CN5 | 139 Mail | 139.com | imap.139.com:993 TLS | smtp.139.com:465 TLS | Authorization code |
+| CN6 | Aliyun Mail | aliyun.com | imap.aliyun.com:993 TLS | smtp.aliyun.com:465 TLS | Regular password |
+| CN7 | Tencent Exmail | exmail.qq.com | imap.exmail.qq.com:993 TLS | smtp.exmail.qq.com:465 TLS | Client password (if Secure Login on) |
+
+### Global / USA
+
+| ID | Provider | Domains | IMAP | SMTP | Auth |
+|----|----------|---------|------|------|------|
+| US1 | Gmail | gmail.com, googlemail.com | imap.gmail.com:993 TLS | smtp.gmail.com:465 TLS | App Password |
+| US2 | Outlook / Hotmail / Live | outlook.com, hotmail.com, live.com | outlook.office365.com:993 TLS | smtp.office365.com:587 STARTTLS | Regular or App Password |
+| US3 | Microsoft 365 (work) | custom domain via Microsoft | outlook.office365.com:993 TLS | smtp.office365.com:587 STARTTLS | Regular or App Password |
+| US4 | Yahoo Mail | yahoo.com, ymail.com | imap.mail.yahoo.com:993 TLS | smtp.mail.yahoo.com:465 TLS | App Password |
+| US5 | iCloud Mail | icloud.com, me.com, mac.com | imap.mail.me.com:993 TLS | smtp.mail.me.com:587 STARTTLS | App-Specific Password |
+| US6 | AOL Mail | aol.com | imap.aol.com:993 TLS | smtp.aol.com:465 TLS | App Password (always required) |
+| US7 | AT&T Mail | att.net | imap.mail.att.net:993 TLS | smtp.mail.att.net:465 TLS | Secure Mail Key |
+| US8 | Comcast / Xfinity | comcast.net | imap.comcast.net:993 TLS | smtp.comcast.net:587 STARTTLS | Regular password (3rd-party access must be enabled) |
+| US9 | Verizon | verizon.net | imap.aol.com:993 TLS | smtp.aol.com:465 TLS | AOL App Password (migrated to AOL) |
+| US10 | Cox Mail | cox.net | imap.mail.yahoo.com:993 TLS | smtp.mail.yahoo.com:465 TLS | Yahoo App Password (migrated to Yahoo) |
+| US11 | FastMail | fastmail.com, fastmail.fm | imap.fastmail.com:993 TLS | smtp.fastmail.com:465 TLS | Regular or App Password |
+
+### Europe
+
+| ID | Provider | Domains | IMAP | SMTP | Auth |
+|----|----------|---------|------|------|------|
+| EU1 | GMX | gmx.com, gmx.de, gmx.net | imap.gmx.com:993 TLS | mail.gmx.com:587 STARTTLS | Regular password (IMAP must be enabled first) |
+| EU2 | Web.de | web.de | imap.web.de:993 TLS | smtp.web.de:587 STARTTLS | Regular password (IMAP must be enabled first) |
+| EU3 | T-Online / Telekom | t-online.de | secureimap.t-online.de:993 TLS | securesmtp.t-online.de:465 TLS | Email-program password (NOT main Telekom login) |
+| EU4 | Orange France | orange.fr, wanadoo.fr | imap.orange.fr:993 TLS | smtp.orange.fr:465 TLS | Regular password |
+| EU5 | Free.fr | free.fr | imap.free.fr:993 TLS | smtp.free.fr:587 STARTTLS | Regular password |
+| EU6 | Libero (Italy) | libero.it | imapmail.libero.it:993 TLS | smtp.libero.it:587 STARTTLS | Regular password |
+| EU7 | Mail.ru / VK Mail | mail.ru, bk.ru, inbox.ru | imap.mail.ru:993 TLS | smtp.mail.ru:465 TLS | Regular password; App Password if 2FA on |
+| EU8 | Posteo | posteo.de | posteo.de:993 TLS | posteo.de:587 STARTTLS | Regular password |
+| EU9 | Mailbox.org | mailbox.org | imap.mailbox.org:993 TLS | smtp.mailbox.org:465 TLS | Regular password; App Password if 2FA on |
+| EU10 | ProtonMail (via Bridge) | proton.me, protonmail.com | 127.0.0.1:1143 none | 127.0.0.1:1025 none | Bridge password (not Proton account password) |
+| EU11 | Zoho Mail | zoho.com, zohomail.com | imap.zoho.com:993 TLS | smtp.zoho.com:465 TLS | App Password |
+
+### India
+
+| ID | Provider | Domains | IMAP | SMTP | Auth |
+|----|----------|---------|------|------|------|
+| IN1 | Rediffmail Pro | rediffmail.com | imap.rediffmailpro.com:993 TLS | smtp.rediffmail.com:465 TLS | Regular password (Pro paid accounts only — free accounts do NOT support IMAP) |
 
 ---
 
-## Step 1 — Check Himalaya
+## Step 1 — Check filo-mail
 
 ```bash
-himalaya --version
+filo-mail --version
 ```
 
-If not installed:
+If not installed, the skill package includes a `filo-mail` wrapper. Install it:
+
 ```bash
-brew install himalaya
+curl -fsSL https://raw.githubusercontent.com/nanaco666/filo-email-skill/main/filo-mail \
+  -o /usr/local/bin/filo-mail && chmod +x /usr/local/bin/filo-mail
 ```
 
-Verify again after install. If `brew` is unavailable, direct user to https://github.com/pimalaya/himalaya/releases for a prebuilt binary.
+Run `filo-mail --version` again to confirm.
 
 ---
 
 ## Step 2 — Choose Provider
 
-Ask the user which email provider they want to connect. Present these options:
+Ask the user which email provider they want to connect. Present the table above grouped by region, or ask for their email address and auto-detect from the domain.
 
-1. **Gmail** (google.com, googlemail.com)
-2. **Outlook / Hotmail / Live** (outlook.com, hotmail.com, live.com)
-3. **Microsoft 365** (work/school accounts ending in custom domain via Microsoft)
-4. **Yahoo Mail** (yahoo.com, ymail.com)
-5. **iCloud Mail** (icloud.com, me.com, mac.com)
-6. **FastMail** (fastmail.com, fastmail.fm)
-7. **ProtonMail** (proton.me, protonmail.com) — requires Bridge
-8. **Zoho Mail** (zoho.com, zohomail.com)
-9. **Custom IMAP** — any other server
-
-Note which option the user picks — it determines the next two steps.
-
----
-
-## Step 3 — App Password / Auth Setup
-
-Different providers require different auth setup before you can use IMAP. Follow the section for the chosen provider.
-
-### Gmail
-
-Gmail requires an **App Password** (regular password won't work if 2-Step Verification is on — and it should be).
-
-1. Go to: https://myaccount.google.com/apppasswords
-2. Sign in if prompted
-3. Under "Select app" choose **Mail**, under "Select device" choose **Other** → name it `himalaya`
-4. Click **Generate** → copy the 16-character password (shown once)
-
-Keep this password — you'll need it in Step 4.
-
-> If you see "App passwords" is missing: 2-Step Verification must be enabled first at https://myaccount.google.com/security
-
----
-
-### Outlook / Hotmail / Live (personal accounts)
-
-Personal Microsoft accounts support IMAP with your regular password **or** an App Password if you have 2FA.
-
-- Without 2FA: use your regular Outlook password directly
-- With 2FA (recommended): generate an App Password at https://account.microsoft.com/security → **Advanced security options** → **App passwords**
+Domain auto-detection:
+- `@qq.com` → CN1
+- `@163.com` → CN2
+- `@126.com` → CN3
+- `@sina.com` / `@sina.cn` → CN4
+- `@139.com` → CN5
+- `@aliyun.com` → CN6
+- `@exmail.qq.com` or custom domain via Tencent Exmail → CN7
+- `@gmail.com` / `@googlemail.com` → US1
+- `@outlook.com` / `@hotmail.com` / `@live.com` → US2
+- `@yahoo.com` / `@ymail.com` → US4
+- `@icloud.com` / `@me.com` / `@mac.com` → US5
+- `@aol.com` → US6
+- `@att.net` → US7
+- `@comcast.net` → US8
+- `@verizon.net` → US9
+- `@cox.net` → US10
+- `@fastmail.com` / `@fastmail.fm` → US11
+- `@gmx.com` / `@gmx.de` / `@gmx.net` → EU1
+- `@web.de` → EU2
+- `@t-online.de` → EU3
+- `@orange.fr` / `@wanadoo.fr` → EU4
+- `@free.fr` → EU5
+- `@libero.it` → EU6
+- `@mail.ru` / `@bk.ru` / `@inbox.ru` → EU7
+- `@posteo.de` → EU8
+- `@mailbox.org` → EU9
+- `@proton.me` / `@protonmail.com` → EU10
+- `@zoho.com` → EU11
+- `@rediffmail.com` → IN1
+- anything else → custom IMAP
 
 ---
 
-### Microsoft 365 (work/school)
+## Step 3 — Auth Setup
 
-Work/school accounts (e.g. `you@yourcompany.com` via Microsoft) may have IMAP disabled by the IT admin.
-
-Ask the user to check with their admin or test with:
-```
-IMAP: outlook.office365.com:993 (TLS)
-SMTP: smtp.office365.com:587 (STARTTLS)
-```
-Auth: use the work account password (or App Password if MFA is enforced).
+Each provider has different authentication requirements. Follow the section for the detected provider.
 
 ---
 
-### Yahoo Mail
+### CN1 — QQ Mail
+
+QQ 邮箱使用**授权码**，不能用 QQ 密码登录。
+
+1. 登录网页端：https://mail.qq.com
+2. 右上角「设置」→「账户」
+3. 找到「POP3/IMAP/SMTP/Exchange/CardDAV/CalDAV 服务」
+4. 开启「IMAP/SMTP 服务」（需手机短信验证）
+5. 点「生成授权码」→ 短信验证后显示 16 位授权码
+6. 复制授权码（只显示一次）
+
+授权码生成页：https://mail.qq.com → 设置 → 账户 → POP3/IMAP/SMTP
+
+> ⚠️ 普通 QQ 密码无法用于 IMAP 登录，必须使用授权码。
+
+---
+
+### CN2 — 163 Mail
+
+1. 登录：https://mail.163.com
+2. 设置 → POP3/SMTP/IMAP
+3. 开启 IMAP/SMTP 服务
+4. 生成授权码（16 位）
+
+授权码生成页：https://mail.163.com → 设置 → POP3/SMTP/IMAP
+
+> ⚠️ 可以为不同客户端生成多个授权码。普通密码无效。
+
+---
+
+### CN3 — 126 Mail
+
+1. 登录：https://mail.126.com
+2. 设置 → POP3/SMTP/IMAP
+3. 开启 IMAP 服务 → 生成授权码
+
+授权码生成页：https://mail.126.com → 设置 → POP3/SMTP/IMAP
+
+---
+
+### CN4 — Sina Mail
+
+1. 登录：https://mail.sina.com.cn
+2. 设置 → 客户端 POP/IMAP/SMTP
+3. 开启服务 → 生成「客户端授权码」
+
+授权码生成页：https://mail.sina.com.cn → 设置 → 客户端 POP/IMAP/SMTP
+
+---
+
+### CN5 — 139 Mail (China Mobile)
+
+1. 登录：https://mail.10086.cn
+2. 设置 → 客户端协议管理
+3. 开启 IMAP/SMTP → 生成授权码（可能需要安全问题验证）
+
+授权码生成页：https://mail.10086.cn → 设置 → 客户端协议管理
+
+---
+
+### CN6 — Aliyun Mail
+
+个人 @aliyun.com 账号默认可使用普通登录密码。
+若管理员启用了「第三方客户端专用密码」，则需要在账户设置中生成专用密码：
+https://mail.aliyun.com → 设置 → 账户 → 第三方客户端安全密码
+
+---
+
+### CN7 — Tencent Exmail
+
+若企业管理员开启了「安全登录」，需生成专用客户端密码：
+https://exmail.qq.com → 设置 → 绑定邮箱 → 开启安全登录 → 新建密码
+
+若「安全登录」未开启，直接使用邮箱登录密码即可。
+
+---
+
+### US1 — Gmail
+
+Gmail requires an **App Password** (regular Google password rejected for IMAP).
+
+1. Open: https://myaccount.google.com/apppasswords
+2. Under "Select app" choose **Mail**, "Select device" choose **Other** → name it `filo-mail`
+3. Click **Generate** → copy the 16-character password (shown once)
+
+> If App Passwords is missing: enable 2-Step Verification first at https://myaccount.google.com/security
+
+Also confirm IMAP is enabled in Gmail: Settings → See all settings → Forwarding and POP/IMAP → Enable IMAP → Save Changes
+
+---
+
+### US2 / US3 — Outlook / Hotmail / Live / Microsoft 365
+
+**Personal accounts (outlook.com, hotmail.com, live.com):**
+- Without 2FA: use regular password
+- With 2FA: generate App Password at https://account.microsoft.com/security → Advanced security options → App passwords
+
+**Work/school accounts (Microsoft 365):**
+- Check with IT admin that IMAP is enabled for the account
+- Auth: work password or App Password if MFA enforced
+
+---
+
+### US4 — Yahoo Mail
 
 Yahoo requires an **App Password**.
 
-1. Go to: https://login.yahoo.com/myaccount/security/
-2. Click **Generate app password** (under "Sign-in and security")
-3. Select **Other app** → name it `himalaya` → Generate
-4. Copy the password shown
-
----
-
-### iCloud Mail
-
-iCloud requires an **App-Specific Password**.
-
-1. Go to: https://appleid.apple.com/account/manage
-2. Sign in → under **Sign-In and Security** click **App-Specific Passwords**
-3. Click **+** → name it `himalaya` → click Create
-4. Copy the password shown (format: `xxxx-xxxx-xxxx-xxxx`)
-
----
-
-### FastMail
-
-FastMail supports standard IMAP with your account password, or you can use an **App Password** (recommended):
-
-1. Go to: https://app.fastmail.com/settings/security/passwords/new
-2. Set access to **IMAP/POP/SMTP** → name it `himalaya`
+1. Open: https://login.yahoo.com/myaccount/security/
+2. Click **Generate app password** → Select Other → name it `filo-mail`
 3. Copy the generated password
 
 ---
 
-### ProtonMail
+### US5 — iCloud Mail
 
-ProtonMail uses end-to-end encryption and **requires the Proton Mail Bridge** to expose a local IMAP interface.
+iCloud requires an **App-Specific Password**.
+
+1. Open: https://appleid.apple.com/account/manage
+2. Sign in → Security → App-Specific Passwords → click **+**
+3. Name it `filo-mail` → Create → copy the password (format: `xxxx-xxxx-xxxx-xxxx`)
+
+---
+
+### US6 — AOL Mail
+
+AOL **always** requires an App Password regardless of 2FA status.
+
+1. Open: https://login.aol.com/account/security
+2. Scroll to "Generate app password" → Select app: Other → name it `filo-mail`
+3. Copy the generated password (shown once)
+
+> ⚠️ Regular AOL password will always fail for IMAP. No exceptions.
+
+---
+
+### US7 — AT&T Mail
+
+AT&T uses a "Secure Mail Key" (equivalent to App Password).
+
+1. Open: https://www.att.com/myatt/
+2. Sign in → Profile → Sign-in info → **Manage Secure Mail Key**
+3. Generate a new key → copy it
+
+> ⚠️ Use AT&T-specific server addresses (imap.mail.att.net), NOT Yahoo servers, even though the backend is Yahoo.
+
+---
+
+### US8 — Comcast / Xfinity
+
+Third-party access is **disabled by default**.
+
+1. Open: https://connect.xfinity.com (sign in)
+2. Gear icon → Settings → Security
+3. Check **"Third Party Access Security"** → Save
+4. Use your regular Xfinity password for IMAP
+
+---
+
+### US9 — Verizon
+
+Verizon email migrated to AOL in 2017. Uses AOL servers and AOL App Password.
+Follow US6 (AOL) instructions, using your verizon.net address to log in at https://login.aol.com/account/security
+
+---
+
+### US10 — Cox Mail
+
+Cox email migrated to Yahoo. Uses Yahoo servers and Yahoo App Password.
+Follow US4 (Yahoo) instructions, using your cox.net address.
+
+---
+
+### US11 — FastMail
+
+FastMail supports regular password, but App Password is recommended:
+
+1. Open: https://app.fastmail.com/settings/security/passwords/new
+2. Access: IMAP/POP/SMTP → name it `filo-mail`
+3. Copy the generated password
+
+---
+
+### EU1 — GMX
+
+GMX disables IMAP by default.
+
+1. Open: https://www.gmx.com → Settings → POP3 & IMAP
+2. Check **"Access IMAP"** and **"Access POP3"** → Save
+3. Use your regular GMX password
+
+> ⚠️ GMX will auto-disable IMAP again if not used for an extended period. Re-enable if you get auth errors after a break.
+
+---
+
+### EU2 — Web.de
+
+Same as GMX — IMAP disabled by default.
+
+1. Open: https://www.web.de → Settings → POP3 & IMAP
+2. Enable IMAP access → Save
+3. Use regular Web.de password
+
+---
+
+### EU3 — T-Online / Telekom Mail
+
+T-Online requires a **separate email-program password** — the main Telekom account password will NOT work.
+
+1. Open: https://email.t-online.de
+2. Gear icon → All Settings → Account Details
+3. Find **"Passwort für E-Mail-Programme"** (Password for email programs)
+4. Set a password specifically for email clients → Save
+
+> ⚠️ This is one of the most common setup failures. The error is always "authentication failed" and the fix is always this separate password.
+
+---
+
+### EU4 — Orange France
+
+Standard setup. Regular password works directly.
+No special steps required.
+
+---
+
+### EU5 — Free.fr
+
+Standard setup. Regular password works.
+Use SMTP port 587 (STARTTLS), not 465.
+
+---
+
+### EU6 — Libero (Italy)
+
+Standard setup. Regular password works.
+Note: IMAP hostname is `imapmail.libero.it` (not `imap.libero.it`).
+
+---
+
+### EU7 — Mail.ru / VK Mail
+
+- Without 2FA: regular password works
+- With 2FA: generate App Password at https://account.mail.ru → Security → Password for external applications → Add
+
+---
+
+### EU8 — Posteo
+
+Standard setup. Regular password works directly.
+Note: IMAP/SMTP hostname is simply `posteo.de` (no subdomain prefix).
+
+---
+
+### EU9 — Mailbox.org
+
+- Without 2FA: regular password works
+- With 2FA: generate Mail App Password at https://mailbox.org → All Settings → Security → Mail App Passwords → Create
+
+---
+
+### EU10 — ProtonMail (via Bridge)
+
+ProtonMail requires the **Proton Mail Bridge** app running locally.
 
 Check if Bridge is running:
 ```bash
 protonmail-bridge --version 2>/dev/null || proton-mail-bridge --version 2>/dev/null || echo "NOT_RUNNING"
 ```
 
-If not installed: https://proton.me/mail/bridge → download and install the desktop app, then start it.
+If not installed: https://proton.me/mail/bridge → download and start the desktop app.
 
 Once Bridge is running:
-- IMAP: `127.0.0.1:1143` (no TLS — Bridge handles encryption internally)
-- SMTP: `127.0.0.1:1025`
-- Login: your Proton email address
-- Password: the **Bridge password** (shown inside the Bridge app, NOT your Proton account password)
+- Open Bridge → find the **Bridge password** (NOT your Proton account password)
+- IMAP and SMTP connect to localhost — Bridge handles encryption
 
 ---
 
-### Zoho Mail
+### EU11 — Zoho Mail
 
-Zoho supports IMAP with your regular password **or** an App Password if 2FA is on:
+Zoho requires an App Password if 2FA is enabled:
 
-1. Go to: https://accounts.zoho.com/home#security/app-specific-passwords
-2. Generate a new password for `himalaya`
-
----
-
-### GMX / Web.de
-
-Standard password authentication — no App Password needed. Just use your GMX/Web.de account password directly.
-
-If IMAP access is blocked, enable it at: https://www.gmx.com/mail/settings → POP3/IMAP.
+1. Open: https://accounts.zoho.com/home#security/app-specific-passwords
+2. Generate new password for `filo-mail`
+3. Without 2FA, regular password works
 
 ---
 
-### Yandex Mail
+### IN1 — Rediffmail
 
-Yandex requires an **App Password** when 2FA is enabled:
+⚠️ Free Rediffmail accounts do **not** support IMAP — POP3 only.
+IMAP is exclusively available on **Rediffmail Pro** (paid).
 
-1. Go to: https://id.yandex.com/security/app-passwords
-2. Create a new password for `himalaya`
-3. Copy the generated password
+If the user has a Pro account:
+- Login: full email address
+- Password: regular Rediffmail password
 
-If 2FA is off, your regular Yandex password works.
-
----
-
-### Namecheap / cPanel Hosting
-
-For domains hosted on cPanel (Namecheap, Bluehost, SiteGround, etc.):
-- IMAP/SMTP host is typically `mail.YOURDOMAIN.com`
-- Login is your full email address
-- Password is the email account password set in cPanel
-- Check the exact host in cPanel → Email → Email Accounts → Connect Devices
+If the user has a free account: inform them IMAP is unavailable and suggest Gmail/Outlook alternatives.
 
 ---
 
 ### Custom IMAP
 
 Ask the user for:
-- IMAP host and port (typically 993 with TLS, or 143 with STARTTLS)
-- SMTP host and port (typically 465 with TLS, or 587 with STARTTLS)
-- Username (usually the full email address)
-- Password
+- IMAP host and port
+- SMTP host and port
+- Username (usually full email address)
+- Password or auth method
 
 ---
 
 ## Step 4 — Write Config
 
-Check if a config already exists:
+Check existing config:
 ```bash
 cat ~/.config/himalaya/config.toml 2>/dev/null || echo "NO_CONFIG"
 ```
 
-If it exists, ask whether to add a new account to it or overwrite.
+If config exists, ask: add a new account or overwrite?
 
-Write (or append) the account block based on provider. Use the account alias `personal` for the first account, `work` for a second, or ask the user to name it.
+Create directory if needed:
+```bash
+mkdir -p ~/.config/himalaya
+```
 
-### Gmail config block
+Write the config block for the detected provider. Replace `USER@...` and `PASSWORD_HERE` with actual values.
+
+---
+
+### CN1 — QQ Mail
 ```toml
-[accounts.personal]
+[accounts.qq]
+email = "USER@qq.com"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.qq.com"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@qq.com"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'AUTHORIZATION_CODE_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.qq.com"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@qq.com"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'AUTHORIZATION_CODE_HERE'"
+```
+
+### CN2 — 163 Mail
+```toml
+[accounts.netease163]
+email = "USER@163.com"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.163.com"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@163.com"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'AUTHORIZATION_CODE_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.163.com"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@163.com"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'AUTHORIZATION_CODE_HERE'"
+```
+
+### CN3 — 126 Mail
+```toml
+[accounts.netease126]
+email = "USER@126.com"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.126.com"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@126.com"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'AUTHORIZATION_CODE_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.126.com"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@126.com"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'AUTHORIZATION_CODE_HERE'"
+```
+
+### CN4 — Sina Mail
+```toml
+[accounts.sina]
+email = "USER@sina.com"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.sina.com"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@sina.com"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'AUTHORIZATION_CODE_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.sina.com"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@sina.com"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'AUTHORIZATION_CODE_HERE'"
+```
+
+### CN5 — 139 Mail
+```toml
+[accounts.china-mobile]
+email = "USER@139.com"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.139.com"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@139.com"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'AUTHORIZATION_CODE_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.139.com"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@139.com"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'AUTHORIZATION_CODE_HERE'"
+```
+
+### CN6 — Aliyun Mail
+```toml
+[accounts.aliyun]
+email = "USER@aliyun.com"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.aliyun.com"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@aliyun.com"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.aliyun.com"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@aliyun.com"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'PASSWORD_HERE'"
+```
+
+### CN7 — Tencent Exmail
+```toml
+[accounts.exmail]
+email = "USER@yourcompany.com"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.exmail.qq.com"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@yourcompany.com"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'CLIENT_PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.exmail.qq.com"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@yourcompany.com"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'CLIENT_PASSWORD_HERE'"
+```
+
+### US1 — Gmail
+```toml
+[accounts.gmail]
 email = "USER@gmail.com"
 display-name = "Your Name"
 default = true
@@ -245,9 +650,9 @@ message.send.backend.auth.type = "password"
 message.send.backend.auth.cmd = "echo 'APP_PASSWORD_HERE'"
 ```
 
-### Outlook / Hotmail / Live config block
+### US2 — Outlook / Hotmail / Live
 ```toml
-[accounts.personal]
+[accounts.outlook]
 email = "USER@outlook.com"
 display-name = "Your Name"
 default = true
@@ -269,9 +674,9 @@ message.send.backend.auth.type = "password"
 message.send.backend.auth.cmd = "echo 'PASSWORD_HERE'"
 ```
 
-### Yahoo config block
+### US4 — Yahoo Mail
 ```toml
-[accounts.personal]
+[accounts.yahoo]
 email = "USER@yahoo.com"
 display-name = "Your Name"
 default = true
@@ -293,9 +698,9 @@ message.send.backend.auth.type = "password"
 message.send.backend.auth.cmd = "echo 'APP_PASSWORD_HERE'"
 ```
 
-### iCloud config block
+### US5 — iCloud Mail
 ```toml
-[accounts.personal]
+[accounts.icloud]
 email = "USER@icloud.com"
 display-name = "Your Name"
 default = true
@@ -317,9 +722,129 @@ message.send.backend.auth.type = "password"
 message.send.backend.auth.cmd = "echo 'APP_SPECIFIC_PASSWORD_HERE'"
 ```
 
-### FastMail config block
+### US6 — AOL Mail
 ```toml
-[accounts.personal]
+[accounts.aol]
+email = "USER@aol.com"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.aol.com"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@aol.com"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'APP_PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.aol.com"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@aol.com"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'APP_PASSWORD_HERE'"
+```
+
+### US7 — AT&T Mail
+```toml
+[accounts.att]
+email = "USER@att.net"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.mail.att.net"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@att.net"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'SECURE_MAIL_KEY_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.mail.att.net"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@att.net"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'SECURE_MAIL_KEY_HERE'"
+```
+
+### US8 — Comcast / Xfinity
+```toml
+[accounts.comcast]
+email = "USER@comcast.net"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.comcast.net"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@comcast.net"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.comcast.net"
+message.send.backend.port = 587
+message.send.backend.encryption.type = "start-tls"
+message.send.backend.login = "USER@comcast.net"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'PASSWORD_HERE'"
+```
+
+### US9 — Verizon (uses AOL servers)
+```toml
+[accounts.verizon]
+email = "USER@verizon.net"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.aol.com"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@verizon.net"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'AOL_APP_PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.aol.com"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@verizon.net"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'AOL_APP_PASSWORD_HERE'"
+```
+
+### US10 — Cox Mail (uses Yahoo servers)
+```toml
+[accounts.cox]
+email = "USER@cox.net"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.mail.yahoo.com"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@cox.net"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'YAHOO_APP_PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.mail.yahoo.com"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@cox.net"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'YAHOO_APP_PASSWORD_HERE'"
+```
+
+### US11 — FastMail
+```toml
+[accounts.fastmail]
 email = "USER@fastmail.com"
 display-name = "Your Name"
 default = true
@@ -341,57 +866,9 @@ message.send.backend.auth.type = "password"
 message.send.backend.auth.cmd = "echo 'PASSWORD_HERE'"
 ```
 
-### ProtonMail config block (via Bridge)
+### EU1 — GMX
 ```toml
-[accounts.personal]
-email = "USER@proton.me"
-display-name = "Your Name"
-default = true
-
-backend.type = "imap"
-backend.host = "127.0.0.1"
-backend.port = 1143
-backend.encryption.type = "none"
-backend.login = "USER@proton.me"
-backend.auth.type = "password"
-backend.auth.cmd = "echo 'BRIDGE_PASSWORD_HERE'"
-
-message.send.backend.type = "smtp"
-message.send.backend.host = "127.0.0.1"
-message.send.backend.port = 1025
-message.send.backend.encryption.type = "none"
-message.send.backend.login = "USER@proton.me"
-message.send.backend.auth.type = "password"
-message.send.backend.auth.cmd = "echo 'BRIDGE_PASSWORD_HERE'"
-```
-
-### Zoho config block
-```toml
-[accounts.personal]
-email = "USER@zoho.com"
-display-name = "Your Name"
-default = true
-
-backend.type = "imap"
-backend.host = "imap.zoho.com"
-backend.port = 993
-backend.encryption.type = "tls"
-backend.login = "USER@zoho.com"
-backend.auth.type = "password"
-backend.auth.cmd = "echo 'APP_PASSWORD_HERE'"
-
-message.send.backend.type = "smtp"
-message.send.backend.host = "smtp.zoho.com"
-message.send.backend.port = 465
-message.send.backend.encryption.type = "tls"
-message.send.backend.login = "USER@zoho.com"
-message.send.backend.auth.type = "password"
-message.send.backend.auth.cmd = "echo 'APP_PASSWORD_HERE'"
-```
-
-### GMX config block
-```toml
-[accounts.personal]
+[accounts.gmx]
 email = "USER@gmx.com"
 display-name = "Your Name"
 default = true
@@ -413,58 +890,250 @@ message.send.backend.auth.type = "password"
 message.send.backend.auth.cmd = "echo 'PASSWORD_HERE'"
 ```
 
-### Yandex config block
+### EU2 — Web.de
 ```toml
-[accounts.personal]
-email = "USER@yandex.com"
+[accounts.webde]
+email = "USER@web.de"
 display-name = "Your Name"
 default = true
 
 backend.type = "imap"
-backend.host = "imap.yandex.com"
+backend.host = "imap.web.de"
 backend.port = 993
 backend.encryption.type = "tls"
-backend.login = "USER@yandex.com"
-backend.auth.type = "password"
-backend.auth.cmd = "echo 'APP_PASSWORD_HERE'"
-
-message.send.backend.type = "smtp"
-message.send.backend.host = "smtp.yandex.com"
-message.send.backend.port = 465
-message.send.backend.encryption.type = "tls"
-message.send.backend.login = "USER@yandex.com"
-message.send.backend.auth.type = "password"
-message.send.backend.auth.cmd = "echo 'APP_PASSWORD_HERE'"
-```
-
-### Namecheap / cPanel config block
-```toml
-[accounts.personal]
-email = "USER@YOURDOMAIN.com"
-display-name = "Your Name"
-default = true
-
-backend.type = "imap"
-backend.host = "mail.YOURDOMAIN.com"
-backend.port = 993
-backend.encryption.type = "tls"
-backend.login = "USER@YOURDOMAIN.com"
+backend.login = "USER@web.de"
 backend.auth.type = "password"
 backend.auth.cmd = "echo 'PASSWORD_HERE'"
 
 message.send.backend.type = "smtp"
-message.send.backend.host = "mail.YOURDOMAIN.com"
-message.send.backend.port = 465
-message.send.backend.encryption.type = "tls"
-message.send.backend.login = "USER@YOURDOMAIN.com"
+message.send.backend.host = "smtp.web.de"
+message.send.backend.port = 587
+message.send.backend.encryption.type = "start-tls"
+message.send.backend.login = "USER@web.de"
 message.send.backend.auth.type = "password"
 message.send.backend.auth.cmd = "echo 'PASSWORD_HERE'"
 ```
 
-### Custom IMAP config block
+### EU3 — T-Online / Telekom Mail
 ```toml
-[accounts.personal]
-email = "USER@example.com"
+[accounts.telekom]
+email = "USER@t-online.de"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "secureimap.t-online.de"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@t-online.de"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'EMAIL_PROGRAM_PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "securesmtp.t-online.de"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@t-online.de"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'EMAIL_PROGRAM_PASSWORD_HERE'"
+```
+
+### EU4 — Orange France
+```toml
+[accounts.orange]
+email = "USER@orange.fr"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.orange.fr"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@orange.fr"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.orange.fr"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@orange.fr"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'PASSWORD_HERE'"
+```
+
+### EU5 — Free.fr
+```toml
+[accounts.freefr]
+email = "USER@free.fr"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.free.fr"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@free.fr"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.free.fr"
+message.send.backend.port = 587
+message.send.backend.encryption.type = "start-tls"
+message.send.backend.login = "USER@free.fr"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'PASSWORD_HERE'"
+```
+
+### EU6 — Libero (Italy)
+```toml
+[accounts.libero]
+email = "USER@libero.it"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imapmail.libero.it"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@libero.it"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.libero.it"
+message.send.backend.port = 587
+message.send.backend.encryption.type = "start-tls"
+message.send.backend.login = "USER@libero.it"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'PASSWORD_HERE'"
+```
+
+### EU7 — Mail.ru / VK Mail
+```toml
+[accounts.mailru]
+email = "USER@mail.ru"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.mail.ru"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@mail.ru"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'PASSWORD_OR_APP_PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.mail.ru"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@mail.ru"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'PASSWORD_OR_APP_PASSWORD_HERE'"
+```
+
+### EU8 — Posteo
+```toml
+[accounts.posteo]
+email = "USER@posteo.de"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "posteo.de"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@posteo.de"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "posteo.de"
+message.send.backend.port = 587
+message.send.backend.encryption.type = "start-tls"
+message.send.backend.login = "USER@posteo.de"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'PASSWORD_HERE'"
+```
+
+### EU9 — Mailbox.org
+```toml
+[accounts.mailboxorg]
+email = "USER@mailbox.org"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.mailbox.org"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@mailbox.org"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'PASSWORD_OR_APP_PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.mailbox.org"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@mailbox.org"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'PASSWORD_OR_APP_PASSWORD_HERE'"
+```
+
+### EU10 — ProtonMail (via Bridge)
+```toml
+[accounts.protonmail]
+email = "USER@proton.me"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "127.0.0.1"
+backend.port = 1143
+backend.encryption.type = "none"
+backend.login = "USER@proton.me"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'BRIDGE_PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "127.0.0.1"
+message.send.backend.port = 1025
+message.send.backend.encryption.type = "none"
+message.send.backend.login = "USER@proton.me"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'BRIDGE_PASSWORD_HERE'"
+```
+
+### EU11 — Zoho Mail
+```toml
+[accounts.zoho]
+email = "USER@zoho.com"
+display-name = "Your Name"
+default = true
+
+backend.type = "imap"
+backend.host = "imap.zoho.com"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "USER@zoho.com"
+backend.auth.type = "password"
+backend.auth.cmd = "echo 'APP_PASSWORD_HERE'"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.zoho.com"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "USER@zoho.com"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "echo 'APP_PASSWORD_HERE'"
+```
+
+### Custom IMAP
+```toml
+[accounts.custom]
+email = "USER@YOURDOMAIN.com"
 display-name = "Your Name"
 default = true
 
@@ -472,7 +1141,7 @@ backend.type = "imap"
 backend.host = "IMAP_HOST"
 backend.port = 993
 backend.encryption.type = "tls"
-backend.login = "USER@example.com"
+backend.login = "USER@YOURDOMAIN.com"
 backend.auth.type = "password"
 backend.auth.cmd = "echo 'PASSWORD_HERE'"
 
@@ -480,130 +1149,82 @@ message.send.backend.type = "smtp"
 message.send.backend.host = "SMTP_HOST"
 message.send.backend.port = 465
 message.send.backend.encryption.type = "tls"
-message.send.backend.login = "USER@example.com"
+message.send.backend.login = "USER@YOURDOMAIN.com"
 message.send.backend.auth.type = "password"
 message.send.backend.auth.cmd = "echo 'PASSWORD_HERE'"
 ```
 
-> **Security note**: The `echo 'password'` form stores the password in plain text in the config file. For better security, use the system keychain:
-> - macOS: `backend.auth.cmd = "security find-generic-password -s himalaya-imap -w"`
-> - Linux (with `pass`): `backend.auth.cmd = "pass show email/imap"`
+> **Security tip**: Replace `echo 'password'` with a keychain command to avoid storing passwords in plain text:
+> - macOS: `security find-generic-password -s filo-mail-imap -w`
+> - Linux (pass): `pass show email/imap`
 
 ---
 
 ## Step 5 — Verify Connection
 
 ```bash
-himalaya envelope list
+filo-mail envelope list
 ```
 
-Expected: a list of emails from your INBOX.
+Expected: a list of emails from INBOX.
 
-If the command fails:
+**Troubleshooting by error:**
 
 | Error | Likely cause | Fix |
 |-------|-------------|-----|
-| `authentication failed` | Wrong password or App Password not yet saved | Re-check Step 3 |
-| `connection refused` | Wrong host/port | Double-check provider settings |
-| `certificate verify failed` | TLS issue | Try `backend.encryption.type = "start-tls"` instead |
-| `IMAP access is disabled` | Provider setting | Enable IMAP in provider's account settings (Gmail: Settings → See all settings → Forwarding and POP/IMAP) |
-| ProtonMail errors | Bridge not running | Start Proton Mail Bridge desktop app first |
+| `authentication failed` | Wrong password/code | Re-check Step 3 |
+| `authentication failed` on CN1-CN5 | Used regular password | Must use authorization code |
+| `authentication failed` on EU3 | Used main Telekom login | Set email-program password (Step 3 EU3) |
+| `authentication failed` on US6/US7 | Used regular password | App Password / Secure Mail Key required |
+| `connection refused` | Wrong host or port | Double-check Provider Registry table |
+| `IMAP access is disabled` on US1 | Gmail IMAP off | Gmail Settings → Forwarding and POP/IMAP → Enable IMAP |
+| `IMAP access is disabled` on EU1/EU2 | GMX/Web.de IMAP off | Settings → POP3 & IMAP → Enable |
+| `IMAP not available` on US8 | Third-party access off | Xfinity Settings → Security → Third Party Access Security |
+| `IMAP not available` on IN1 | Free Rediffmail | IMAP only on Rediffmail Pro (paid) |
+| ProtonMail connection refused | Bridge not running | Start Proton Mail Bridge desktop app |
 
 ---
 
 ## Common Operations
 
-### Read emails
 ```bash
-himalaya envelope list                          # INBOX, latest 10
-himalaya envelope list --page 2                 # next page
-himalaya envelope list --folder Sent            # another folder
-himalaya envelope list --output json            # machine-readable
-```
+filo-mail envelope list                          # INBOX, latest messages
+filo-mail envelope list --folder Sent            # another folder
+filo-mail envelope list --page 2                 # paginate
+filo-mail envelope list --output json            # JSON output
 
-### Search
-```bash
-himalaya envelope list from alice@example.com
-himalaya envelope list subject "invoice"
-himalaya envelope list subject "meeting" from boss@company.com
-```
+filo-mail envelope list from alice@example.com   # search by sender
+filo-mail envelope list subject "invoice"        # search by subject
 
-### Read a message
-```bash
-himalaya message read 42
-```
+filo-mail message read 42                        # read email
+filo-mail message reply 42                       # reply (opens $EDITOR)
+filo-mail message reply 42 --all                 # reply-all
+filo-mail message forward 42                     # forward
 
-### Reply / Forward
-```bash
-himalaya message reply 42           # opens $EDITOR
-himalaya message reply 42 --all     # reply-all
-himalaya message forward 42
-```
+filo-mail message write                          # compose new email
 
-### Write a new email
-```bash
-himalaya message write              # interactive ($EDITOR)
-```
+filo-mail message move 42 Archive                # move to folder
+filo-mail message copy 42 Important              # copy to folder
+filo-mail message delete 42                      # delete
 
-Or send directly:
-```bash
-himalaya template send <<'EOF'
-From: you@example.com
-To: recipient@example.com
-Subject: Hello
+filo-mail flag add 42 --flag seen                # mark as read
+filo-mail flag remove 42 --flag seen             # mark as unread
 
-Message body here.
-EOF
-```
+filo-mail attachment download 42                 # save attachments
+filo-mail attachment download 42 --dir ~/Downloads
 
-### Organize
-```bash
-himalaya message move 42 Archive
-himalaya message copy 42 Important
-himalaya message delete 42
-himalaya flag add 42 --flag seen
-himalaya flag remove 42 --flag seen
-```
-
-### Attachments
-```bash
-himalaya attachment download 42
-himalaya attachment download 42 --dir ~/Downloads
-```
-
-### Multiple accounts
-```bash
-himalaya account list
-himalaya --account work envelope list
-himalaya --account personal message reply 42
+filo-mail account list                           # list configured accounts
+filo-mail --account work envelope list           # use specific account
 ```
 
 ---
 
 ## Add Another Account
 
-To connect a second email account, run this skill again. When Step 4 asks, choose "add to existing config" — the new account block will be appended with a different alias (e.g. `work`).
+To connect a second account, run this skill again. When Step 4 asks, choose "add to existing config" and use a different account alias (e.g. `work`, `personal2`).
 
----
-
-## Troubleshooting
-
-**Gmail: IMAP disabled**
-Go to Gmail Settings → See all settings → Forwarding and POP/IMAP → Enable IMAP → Save.
-
-**Gmail: "Less secure app" error**
-This means you're using the regular password. Generate an App Password instead (Step 3).
-
-**Outlook: `AUTHENTICATE failed`**
-Modern auth may be required. Check if your admin allows IMAP Basic Auth at https://admin.microsoft.com.
-
-**iCloud: `LOGIN failed`**
-Make sure you're using the App-Specific Password, not your Apple ID password.
-
-**ProtonMail: can't connect to 127.0.0.1**
-The Bridge app must be open and logged in. Check its status in the system tray.
-
-**`$EDITOR` not set**
+Switch between accounts:
 ```bash
-export EDITOR=nano     # or vim, code, etc.
+filo-mail --account gmail envelope list
+filo-mail --account work message write
 ```
