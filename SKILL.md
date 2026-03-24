@@ -1062,7 +1062,6 @@ Expected: a list of emails from INBOX.
 | `authentication failed` on EU3 | Used main Telekom login | Set email-program password (Step 3 EU3) |
 | `authentication failed` on US6/US7 | Used regular password | App Password / Secure Mail Key required |
 | `connection refused` | Wrong host or port | Double-check Provider Registry table |
-| `IMAP access is disabled` on US1 | Gmail IMAP off | Gmail Settings → Forwarding and POP/IMAP → Enable IMAP |
 | `IMAP access is disabled` on EU1/EU2 | GMX/Web.de IMAP off | Settings → POP3 & IMAP → Enable |
 | `IMAP not available` on US8 | Third-party access off | Xfinity Settings → Security → Third Party Access Security |
 | `IMAP not available` on IN1 | Free Rediffmail | IMAP only on Rediffmail Pro (paid) |
@@ -1070,36 +1069,198 @@ Expected: a list of emails from INBOX.
 
 ---
 
-## Common Operations
+## Operations Reference
+
+### Reading & Listing
 
 ```bash
-filo-mail envelope list                          # INBOX, latest messages
-filo-mail envelope list --folder Sent            # another folder
-filo-mail envelope list --page 2                 # paginate
-filo-mail envelope list --output json            # JSON output
+# List inbox
+filo-mail envelope list
+filo-mail envelope list --folder Sent
+filo-mail envelope list --page 2 --page-size 50
 
-filo-mail envelope list from alice@example.com   # search by sender
-filo-mail envelope list subject "invoice"        # search by subject
+# Search — full query DSL
+filo-mail envelope list from alice@example.com
+filo-mail envelope list subject "invoice"
+filo-mail envelope list to me@example.com
+filo-mail envelope list body "payment"
+filo-mail envelope list flag seen                          # only read emails
+filo-mail envelope list date 2026-01-01                    # exact date
+filo-mail envelope list after 2026-01-01                   # newer than
+filo-mail envelope list before 2026-03-01                  # older than
+filo-mail envelope list from alice subject meeting         # AND (implicit)
+filo-mail envelope list "from alice or from bob"           # OR
+filo-mail envelope list "not flag seen"                    # NOT
+filo-mail envelope list "order by date desc"               # sort
+filo-mail envelope list "from alice order by subject asc"  # search + sort
 
-filo-mail message read 42                        # read email
-filo-mail message reply 42                       # reply (opens $EDITOR)
+# Thread view
+filo-mail envelope thread                                  # inbox as threads
+filo-mail envelope thread subject "project"                # search threads
+
+# Read a message
+filo-mail message read 42
+filo-mail message read 42 --preview                        # read without marking as seen
+filo-mail message read 42 --no-headers                     # body only
+filo-mail message read 42 -H From -H Subject               # specific headers only
+
+# Read a full thread
+filo-mail message thread 42                                # all messages in thread
+filo-mail message thread 42 --preview
+
+# Export raw MIME
+filo-mail message export 42 --full                         # full raw MIME to stdout
+filo-mail message export 42 --destination /tmp/email.eml   # save to file
+filo-mail message export 42 --full --open                  # export + auto-open
+```
+
+### Composing & Sending
+
+```bash
+filo-mail message write                          # compose (opens $EDITOR)
+filo-mail message reply 42                       # reply
 filo-mail message reply 42 --all                 # reply-all
 filo-mail message forward 42                     # forward
+filo-mail message edit 42                        # edit existing/draft message
 
-filo-mail message write                          # compose new email
+# Open a mailto: link directly
+filo-mail message mailto "mailto:alice@example.com?subject=Hello"
 
-filo-mail message move 42 Archive                # move to folder
-filo-mail message copy 42 Important              # copy to folder
-filo-mail message delete 42                      # delete
+# Send raw message from stdin
+cat email.eml | filo-mail message send
 
+# Save message to folder without sending
+cat email.eml | filo-mail message save --folder Drafts
+
+# Template workflow (MML syntax)
+filo-mail template write                         # compose template
+filo-mail template reply 42                      # reply template
+filo-mail template forward 42                    # forward template
+filo-mail template save                          # save as draft
+filo-mail template send                          # send directly from template
+```
+
+### Folders
+
+```bash
+filo-mail folder list                            # list all folders
+filo-mail folder add "MyFolder"                  # create folder
+filo-mail folder expunge                         # permanently remove deleted messages
+filo-mail folder purge --yes                     # delete ALL messages in folder
+filo-mail folder delete --yes                    # delete the folder itself
+```
+
+### Flags
+
+```bash
 filo-mail flag add 42 --flag seen                # mark as read
+filo-mail flag add 42 --flag flagged             # star/flag
 filo-mail flag remove 42 --flag seen             # mark as unread
+filo-mail flag set 42 seen flagged               # replace all flags (overwrite)
+```
 
-filo-mail attachment download 42                 # save attachments
+### Attachments
+
+```bash
+filo-mail attachment download 42
 filo-mail attachment download 42 --dir ~/Downloads
+```
 
-filo-mail account list                           # list configured accounts
-filo-mail --account work envelope list           # use specific account
+### Accounts
+
+```bash
+filo-mail account list
+filo-mail account configure                      # interactive setup wizard
+filo-mail account doctor                         # diagnose config issues
+filo-mail account doctor --fix                   # auto-fix keyring / OAuth2 issues
+filo-mail --account work envelope list           # switch account
+```
+
+### Output & Debugging
+
+```bash
+# Output formats
+filo-mail envelope list --output json
+filo-mail envelope list --output plain
+
+# Global flags
+filo-mail --quiet envelope list                  # silence all logs
+filo-mail --debug envelope list                  # debug logs (= RUST_LOG=debug)
+filo-mail --trace envelope list                  # trace + backtrace
+
+# Environment variables
+RUST_LOG=debug filo-mail envelope list
+RUST_LOG=trace RUST_BACKTRACE=1 filo-mail envelope list
+NO_COLOR=1 filo-mail envelope list               # disable colored output
+
+# Shell completion
+filo-mail completion bash >> ~/.bashrc
+filo-mail completion zsh >> ~/.zshrc
+filo-mail completion fish > ~/.config/fish/completions/filo-mail.fish
+```
+
+---
+
+## Auth: OAuth 2.0
+
+For providers that support OAuth2 (most modern providers), use the interactive wizard instead of plain password:
+
+```bash
+filo-mail account configure
+```
+
+The wizard supports **Thunderbird Autoconfiguration** — it can auto-discover IMAP/SMTP settings for your domain, then walk through the OAuth2 flow in the browser. No manual config file editing needed.
+
+If OAuth2 breaks after token expiry:
+```bash
+filo-mail account doctor --fix
+```
+
+---
+
+## PGP Encryption
+
+Himalaya supports end-to-end encryption via PGP. Three backends available:
+
+```toml
+# Option 1: shell commands (gpg must be installed)
+[accounts.personal.message.encrypt]
+backend.type = "gpg"
+
+# Option 2: native Rust (no gpg binary needed)
+[accounts.personal.message.encrypt]
+backend.type = "pgp"
+backend.secret-key-path = "~/.config/himalaya/secret.pgp"
+
+# Option 3: GPG bindings
+[accounts.personal.message.encrypt]
+backend.type = "gpg-native"
+```
+
+When composing, MML handles encryption/signing:
+```
+<#part encrypt=pgpmime sign=pgpmime>
+Your secret message here.
+<#/part>
+```
+
+---
+
+## Useful Config Options
+
+```toml
+[accounts.personal]
+# Where deleted messages go: move to Trash folder (default) or just set Deleted flag
+message.delete.style = "folder"   # or "flag"
+
+# Auto-save sent messages to Sent folder
+message.send.save-copy = true
+
+# Folder name aliases (provider-specific folder names)
+folder.aliases.inbox = "INBOX"
+folder.aliases.sent = "Sent Items"   # Outlook uses "Sent Items" not "Sent"
+folder.aliases.trash = "Deleted"     # some providers use "Deleted"
+folder.aliases.drafts = "Drafts"
 ```
 
 ---
